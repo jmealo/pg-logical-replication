@@ -120,7 +120,9 @@ export class LogicalReplicationService extends EventEmitter2 implements LogicalR
         if (buffer[0] == 0x77) {
           // XLogData
           this.emit('data', lsn, plugin.parse(buffer.subarray(25)));
-          this._acknowledge(lsn);
+          this._acknowledge(lsn).catch((error) => {
+            this.emit('error', error);
+          });
         } else if (buffer[0] == 0x6b) {
           // Primary keepalive message
           const timestamp = Math.floor(
