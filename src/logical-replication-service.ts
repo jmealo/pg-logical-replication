@@ -155,14 +155,17 @@ export class LogicalReplicationService extends EventEmitter2 implements LogicalR
       this.checkStandbyStatusTimer = null;
     }
     if (this.config.acknowledge!.timeoutSeconds > 0 && enable)
-      this.checkStandbyStatusTimer = setInterval(async () => {
+      this.checkStandbyStatusTimer = setInterval(() => {
         if (this._stop) return;
 
         if (
           this._lastLsn &&
           Date.now() - this.lastStandbyStatusUpdatedTime > this.config.acknowledge!.timeoutSeconds * 1000
-        )
-          await this.acknowledge(this._lastLsn);
+        ) {
+          this.acknowledge(this._lastLsn).catch((error) => {
+            this.emit('error', error);
+          });
+        }
       }, 1000);
   }
 
